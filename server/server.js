@@ -915,4 +915,6 @@ setInterval(cleanupTempFiles, 5 * 60 * 1000);
 
 // ✅ **اجرای سرور**
 const PORT = process.env.PORT || 5000;
+console.log('🟡 process.env.PORT:', process.env.PORT);
+console.log('🟢 Final PORT used by server:', PORT);
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}...`));
