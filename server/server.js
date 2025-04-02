@@ -1,3 +1,7 @@
+app.get("/", (req, res) => {
+  res.send("🎉 Backend is running and ready!");
+});
+
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
