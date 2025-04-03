@@ -13,6 +13,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CircularProgress from '@mui/material/CircularProgress';
 import ResumeScore from '../components/ResumeScore';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const ApplicantPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [interviewTopic, setInterviewTopic] = useState("");
@@ -57,7 +58,7 @@ const ApplicantPage = () => {
     formData.append("question", questions[currentQuestionIndex]?.text || '');
 
     try {
-      const response = await fetch("http://localhost:5000/save-audio", {
+      const response = await fetch(`${API_BASE_URL}/save-audio`, {
         method: "POST",
         body: formData,
       });
@@ -86,7 +87,7 @@ const ApplicantPage = () => {
   // تابع برای پاک کردن پاسخ‌های قبلی
   const clearPreviousResponses = async () => {
     try {
-      const response = await fetch("http://localhost:5000/clear-responses", {
+      const response = await fetch(`${API_BASE_URL}/clear-responses`, {
         method: "POST",
       });
       const data = await response.json();
@@ -112,10 +113,11 @@ const ApplicantPage = () => {
       const formData = new FormData();
       formData.append("resume", selectedFile);
 
-      const resumeResponse = await fetch("http://localhost:5000/upload-resume", {
-        method: "POST",
-        body: formData,
-      });
+	  const resumeResponse = await fetch(`${API_BASE_URL}/upload-resume`, {
+	    method: "POST",
+	    body: formData,
+	  });
+
 
       const resumeData = await resumeResponse.json();
       if (!resumeData.success) {
@@ -128,26 +130,26 @@ const ApplicantPage = () => {
       setResumeFeatures(resumeData.features);
 
       // محاسبه امتیاز رزومه
-      const scoreResponse = await fetch("http://localhost:5000/calculate-resume-score", {
+      const scoreResponse = await fetch(`${API_BASE_URL}/calculate-resume-score`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          features: resumeData.features,
-          topic: interviewTopic
+      	features: resumeData.features,
+      	topic: interviewTopic,
         }),
       });
-
+      
       const scoreData = await scoreResponse.json();
       if (scoreData.success) {
         setResumeScore(scoreData);
       }
 
       // دریافت سوالات topic
-      const basicQuestionsResponse = await fetch("http://localhost:5000/generate-basic-questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: interviewTopic }),
-      });
+	  const basicQuestionsResponse = await fetch(`${API_BASE_URL}/generate-basic-questions`, {
+	    method: "POST",
+	    headers: { "Content-Type": "application/json" },
+	    body: JSON.stringify({ topic: interviewTopic }),
+	  });
 
       const basicData = await basicQuestionsResponse.json();
       if (!basicData.success) {
@@ -169,14 +171,14 @@ const ApplicantPage = () => {
 
   const startResumePhase = async () => {
     try {
-      const response = await fetch("http://localhost:5000/generate-resume-questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          features: resumeFeatures,
-          topic: interviewTopic
-        }),
-      });
+	  const response = await fetch(`${API_BASE_URL}/generate-resume-questions`, {
+	    method: "POST",
+	    headers: { "Content-Type": "application/json" },
+	    body: JSON.stringify({
+	  	features: resumeFeatures,
+	  	topic: interviewTopic,
+	    }),
+	  });
 
       const data = await response.json();
       if (data.success) {
@@ -203,23 +205,23 @@ const ApplicantPage = () => {
       formData.append("topic", interviewTopic);
 
       try {
-        const response = await fetch("http://localhost:5000/upload-resume", {
-          method: "POST",
-          body: formData,
-        });
+		const response = await fetch(`${API_BASE_URL}/upload-resume`, {
+		  method: "POST",
+		  body: formData,
+		});
 
         const data = await response.json();
         if (data.success) {
-          const resumeQuestionsResponse = await fetch("http://localhost:5000/generate-questions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ 
-              text: data.text,
-              topic: interviewTopic
-            }),
-          });
+		  const resumeQuestionsResponse = await fetch(`${API_BASE_URL}/generate-questions`, {
+		    method: "POST",
+		    headers: {
+		  	"Content-Type": "application/json",
+		    },
+		    body: JSON.stringify({
+		  	features: resumeFeatures,
+		  	topic: interviewTopic,
+		    }),
+		  });
 
           const questionData = await resumeQuestionsResponse.json();
           if (questionData.success) {
@@ -313,7 +315,7 @@ const ApplicantPage = () => {
       setIsAudioLoading(true);
       setIsQuestionPlaying(true);
 
-      const newAudio = new Audio(`http://localhost:5000${question.audioUrl}`);
+      const newAudio = new Audio(`${API_BASE_URL}${question.audioUrl}`);
       
       // تنظیمات صدا برای کاهش اکو
       newAudio.volume = 0.8;
@@ -389,18 +391,18 @@ const ApplicantPage = () => {
     }
   }, [questions]);
 
-  const fetchResults = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/get-results');
-      const data = await response.json();
-      if (data.success) {
-        setInterviewResults(data.results);
-        setShowResults(true);
-      }
-    } catch (error) {
-      console.error('Error fetching results:', error);
-    }
-  };
+	const fetchResults = async () => {
+	  try {
+		const response = await fetch(`${API_BASE_URL}/get-results`);
+		const data = await response.json();
+		if (data.success) {
+		  setInterviewResults(data.results);
+		  setShowResults(true);
+		}
+	  } catch (error) {
+		console.error("Error fetching results:", error);
+	  }
+	};
 
   // Custom file input handler
   const handleFileSelect = () => {
@@ -427,7 +429,7 @@ const ApplicantPage = () => {
       const transitionMsg = "Now, let's move on and ask a few questions about your resume and work experience.";
       setTransitionMessage(transitionMsg);
 
-      const response = await fetch("http://localhost:5000/generate-resume-questions", {
+      const response = await fetch(`${API_BASE_URL}/generate-resume-questions`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json" 
@@ -447,22 +449,16 @@ const ApplicantPage = () => {
 
       // پخش پیام صوتی انتقال
       try {
-        const transitionAudio = await fetch("http://localhost:5000/text-to-speech", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: transitionMsg })
-        });
+		const transitionAudio = await fetch(`${API_BASE_URL}/text-to-speech`, {
+		  method: "POST",
+		  headers: { "Content-Type": "application/json" },
+		  body: JSON.stringify({ text: transitionMsg }),
+		});
 
         const audioData = await transitionAudio.json();
         
         if (audioData.success) {
-          const audio = new Audio(`http://localhost:5000${audioData.audioUrl}`);
-          
-          await new Promise((resolve) => {
-            audio.onended = resolve;
-            audio.onerror = resolve;
-            audio.play().catch(resolve);
-          });
+ز
         }
       } catch (error) {
         console.error("Audio playback error:", error);
