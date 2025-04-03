@@ -469,6 +469,7 @@ const ApplicantPage = () => {
       } catch (error) {
         console.error("Audio playback error:", error);
         // ادامه اجرا حتی در صورت خطای صدا
+		//تست
       }
 
       // تنظیم سوالات جدید
