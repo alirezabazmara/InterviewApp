@@ -458,7 +458,13 @@ const ApplicantPage = () => {
         const audioData = await transitionAudio.json();
         
         if (audioData.success) {
-ز
+          const audio = new Audio(`${API_BASE_URL}${audioData.audioUrl}`);
+          
+          await new Promise((resolve) => {
+            audio.onended = resolve;
+            audio.onerror = resolve;
+            audio.play().catch(resolve);
+          });
         }
       } catch (error) {
         console.error("Audio playback error:", error);
