@@ -13,7 +13,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CircularProgress from '@mui/material/CircularProgress';
 import ResumeScore from '../components/ResumeScore';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
 const ApplicantPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [interviewTopic, setInterviewTopic] = useState("");
