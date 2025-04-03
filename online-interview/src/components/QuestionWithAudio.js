@@ -5,7 +5,8 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 const QuestionWithAudio = ({ question }) => {
   const playAudio = () => {
     if (question.audioUrl) {
-      const audio = new Audio(`http://localhost:5000${question.audioUrl}`);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const audio = new Audio(`${API_BASE_URL}${question.audioUrl}`);
       audio.play();
     }
   };
