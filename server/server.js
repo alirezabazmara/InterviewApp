@@ -1,5 +1,3 @@
-
-
 require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
@@ -10,8 +8,18 @@ const path = require("path");
 const { OpenAI } = require("openai");
 const { spawn } = require("child_process");
 
-const app = express();
-app.use(cors());
+const corsOptions = {
+  origin: [
+    'https://interview-app-tan.vercel.app',
+    'https://interview-app-83467631s-projects.vercel.app',
+    'http://localhost:5000'  // اینجا 3000 را به 5000 تغییر دادیم
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 
