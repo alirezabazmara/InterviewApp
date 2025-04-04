@@ -8,6 +8,7 @@ const path = require("path");
 const { OpenAI } = require("openai");
 const { spawn } = require("child_process");
 
+const app = express(); 
 const corsOptions = {
   origin: [
     'https://interview-app-tan.vercel.app',
