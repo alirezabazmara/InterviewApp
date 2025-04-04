@@ -13,7 +13,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CircularProgress from '@mui/material/CircularProgress';
 import ResumeScore from '../components/ResumeScore';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = process.env.VITE_API_URL || "https://interviewapp-f6po.onrender.com";
 if (!API_BASE_URL) {
   console.error('VITE_API_URL is not defined!');
 }
