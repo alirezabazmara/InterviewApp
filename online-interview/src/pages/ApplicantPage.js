@@ -13,7 +13,11 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CircularProgress from '@mui/material/CircularProgress';
 import ResumeScore from '../components/ResumeScore';
 
-const API_BASE_URL = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+if (!API_BASE_URL) {
+  console.error('VITE_API_URL is not defined!');
+}
+
 const ApplicantPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [interviewTopic, setInterviewTopic] = useState("");
