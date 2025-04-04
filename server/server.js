@@ -12,7 +12,7 @@ const corsOptions = {
   origin: [
     'https://interview-app-tan.vercel.app',
     'https://interview-app-83467631s-projects.vercel.app',
-    'http://localhost:5000'  // اینجا 3000 را به 5000 تغییر دادیم
+    'http://localhost:5000' 
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
