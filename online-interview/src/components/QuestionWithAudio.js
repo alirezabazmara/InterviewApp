@@ -3,11 +3,22 @@ import { Box, Typography, IconButton } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 
 const QuestionWithAudio = ({ question }) => {
-  const playAudio = () => {
+  const playAudio = async () => {
     if (question.audioUrl) {
       const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-      const audio = new Audio(`${API_BASE_URL}${question.audioUrl}`);
-      audio.play();
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      try {
+        const response = await fetch(`${API_BASE_URL}${question.audioUrl}`);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start();
+      } catch (error) {
+        console.error("Web Audio playback failed:", error);
+      }
     }
   };
 
@@ -29,4 +40,4 @@ const QuestionWithAudio = ({ question }) => {
   );
 };
 
-export default QuestionWithAudio; 
+export default QuestionWithAudio;
