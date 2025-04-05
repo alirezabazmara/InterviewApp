@@ -310,45 +310,44 @@ const ApplicantPage = () => {
         await stopRecording();
       }
 
-      // توقف پخش صداهای قبلی
-      if (audio) {
-        await audio.pause();
-        audio.currentTime = 0;
-      }
-
       setIsAudioLoading(true);
       setIsQuestionPlaying(true);
 
-      const newAudio = new Audio(`${API_BASE_URL}${question.audioUrl}`);
+      // دریافت فایل صوتی
+      const response = await fetch(`${API_BASE_URL}${question.audioUrl}`);
+      const arrayBuffer = await response.arrayBuffer();
       
-      // تنظیمات صدا برای کاهش اکو
-      newAudio.volume = 0.8;
+      // ایجاد context صوتی
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
       
-      newAudio.onended = () => {
+      // ایجاد منبع صوتی
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      
+      // تنظیم رویداد پایان پخش
+      source.onended = () => {
         setIsQuestionPlaying(false);
+        setIsAudioLoading(false);
+        audioContext.close(); // پایان context برای آزاد کردن منابع
         // افزایش تاخیر قبل از شروع ضبط
         setTimeout(() => {
           startRecording();
         }, 1000);
       };
 
-      await new Promise((resolve) => {
-        newAudio.addEventListener('canplaythrough', resolve, { once: true });
-        newAudio.addEventListener('error', resolve, { once: true });
-      });
-
-      setAudio(newAudio);
-      await newAudio.play();
+      // شروع پخش
+      source.start();
       
       setPlayedQuestions(prev => new Set(prev).add(currentQuestionIndex));
 
     } catch (error) {
-      console.log("Audio error:", error);
+      console.error("Error playing audio:", error);
       setIsQuestionPlaying(false);
-    } finally {
       setIsAudioLoading(false);
     }
-  }, [audio, isAudioLoading, currentQuestionIndex, playedQuestions, startRecording, isRecording, stopRecording]);
+  }, [isAudioLoading, currentQuestionIndex, playedQuestions, startRecording, isRecording, stopRecording]);
 
   useEffect(() => {
     if (isInterviewStarted && questions.length > 0 && questions[currentQuestionIndex]) {
@@ -433,6 +432,7 @@ const ApplicantPage = () => {
       const transitionMsg = "Now, let's move on and ask a few questions about your resume and work experience.";
       setTransitionMessage(transitionMsg);
 
+      // دریافت سوالات رزومه
       const response = await fetch(`${API_BASE_URL}/generate-resume-questions`, {
         method: "POST",
         headers: { 
@@ -453,38 +453,56 @@ const ApplicantPage = () => {
 
       // پخش پیام صوتی انتقال
       try {
-		const transitionAudio = await fetch(`${API_BASE_URL}/text-to-speech`, {
-		  method: "POST",
-		  headers: { "Content-Type": "application/json" },
-		  body: JSON.stringify({ text: transitionMsg }),
-		});
+        const audioResponse = await fetch(`${API_BASE_URL}/text-to-speech`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: transitionMsg }),
+        });
 
-        const audioData = await transitionAudio.json();
+        const audioData = await audioResponse.json();
         
         if (audioData.success) {
-          const audio = new Audio(`${API_BASE_URL}${audioData.audioUrl}`);
+          const audioFileResponse = await fetch(`${API_BASE_URL}${audioData.audioUrl}`);
+          const arrayBuffer = await audioFileResponse.arrayBuffer();
           
-          await new Promise((resolve) => {
-            audio.onended = resolve;
-            audio.onerror = resolve;
-            audio.play().catch(resolve);
-          });
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(audioContext.destination);
+          
+          source.onended = () => {
+            audioContext.close();
+            // تنظیم سوالات جدید بعد از اتمام پخش صدا
+            setQuestions(data.questions);
+            setCurrentQuestionIndex(0);
+            setInterviewPhase('resume');
+            setIsTransitioning(false);
+            setTransitionMessage('');
+          };
+
+          source.start();
+        } else {
+          // اگر پخش صدا موفق نبود، مستقیماً به مرحله بعد برو
+          setQuestions(data.questions);
+          setCurrentQuestionIndex(0);
+          setInterviewPhase('resume');
+          setIsTransitioning(false);
+          setTransitionMessage('');
         }
       } catch (error) {
         console.error("Audio playback error:", error);
-        // ادامه اجرا حتی در صورت خطای صدا
-		//تست
+        // در صورت خطا در پخش صدا، به مرحله بعد برو
+        setQuestions(data.questions);
+        setCurrentQuestionIndex(0);
+        setInterviewPhase('resume');
+        setIsTransitioning(false);
+        setTransitionMessage('');
       }
-
-      // تنظیم سوالات جدید
-      setQuestions(data.questions);
-      setCurrentQuestionIndex(0);
-      setInterviewPhase('resume');
 
     } catch (error) {
       console.error("Error in transitionToResumePhase:", error);
       alert(error.message || "Error transitioning to resume questions. Please try again.");
-    } finally {
       setIsTransitioning(false);
       setTransitionMessage('');
     }
