@@ -11,8 +11,7 @@ const { spawn } = require("child_process");
 const app = express(); 
 const corsOptions = {
   origin: [
-    'https://interview-app-tan.vercel.app',
-    'https://interview-app-83467631s-projects.vercel.app',
+    'https://passintervu.com',
     'http://localhost:5000' 
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
